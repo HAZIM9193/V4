@@ -4,6 +4,7 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -112,6 +113,24 @@ inputBox.Parent = mainFrame
 local inputCorner = Instance.new("UICorner")
 inputCorner.CornerRadius = UDim.new(0, 8)
 inputCorner.Parent = inputBox
+
+-- Create the clear button
+local clearButton = Instance.new("TextButton")
+clearButton.Name = "ClearButton"
+clearButton.Size = UDim2.new(0, 80, 0, 30)
+clearButton.Position = UDim2.new(1, -180, 0, 240)
+clearButton.BackgroundColor3 = Color3.fromRGB(255, 193, 7)
+clearButton.BorderSizePixel = 0
+clearButton.Text = "Clear"
+clearButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+clearButton.TextScaled = true
+clearButton.Font = Enum.Font.GothamBold
+clearButton.Parent = mainFrame
+
+-- Add rounded corners to clear button
+local clearCorner = Instance.new("UICorner")
+clearCorner.CornerRadius = UDim.new(0, 6)
+clearCorner.Parent = clearButton
 
 -- Create the run button
 local runButton = Instance.new("TextButton")
@@ -276,7 +295,7 @@ local function hideGUI()
     end
 end
 
--- Function to execute code safely
+-- Function to execute code safely with loadstring support
 local function executeCode(code)
     outputBox.Text = ""
     
@@ -293,7 +312,7 @@ local function executeCode(code)
         outputBox.Text = outputBox.Text .. output .. "\n"
     end
     
-    -- Create a safe environment for code execution
+    -- Create a safe environment for code execution with expanded access
     local env = {
         print = customPrint,
         warn = function(...) customPrint("WARN:", ...) end,
@@ -308,17 +327,56 @@ local function executeCode(code)
         string = string,
         table = table,
         coroutine = coroutine,
+        loadstring = loadstring,
+        pcall = pcall,
+        xpcall = xpcall,
+        -- Add game services for loadstring compatibility
+        game = game,
+        workspace = workspace,
+        wait = wait,
+        spawn = spawn,
+        delay = delay,
+        -- Add Instance for creating objects
+        Instance = Instance,
+        -- Add common Roblox globals
+        Vector3 = Vector3,
+        Vector2 = Vector2,
+        UDim2 = UDim2,
+        UDim = UDim,
+        Color3 = Color3,
+        CFrame = CFrame,
+        Ray = Ray,
+        -- Add Enum
+        Enum = Enum,
         -- Add more safe functions as needed
     }
     
+    -- Check if the code contains loadstring with HttpGet pattern
+    local isLoadstringHttp = string.find(code, "loadstring") and string.find(code, "HttpGet")
+    
     -- Try to execute the code
     local success, result = pcall(function()
-        local func, err = loadstring(code)
-        if func then
-            setfenv(func, env)
-            return func()
+        local func, err
+        
+        if isLoadstringHttp then
+            -- For loadstring with HttpGet, execute in the global environment
+            func, err = loadstring(code)
+            if func then
+                -- Set environment to allow access to game services
+                setfenv(func, setmetatable(env, {__index = _G}))
+                return func()
+            else
+                error(err)
+            end
         else
-            error(err)
+            -- For regular code, use restricted environment
+            func, err = loadstring(code)
+            if func then
+                setfenv(func, env)
+                return func()
+            else
+                error(err)
+            end
         end
     end)
     
@@ -331,6 +389,12 @@ local function executeCode(code)
     if outputBox.Text == "" then
         outputBox.Text = "Code executed successfully (no output)"
     end
+end
+
+-- Function to clear input
+local function clearInput()
+    inputBox.Text = ""
+    outputBox.Text = "Input cleared."
 end
 
 -- Connect button events
@@ -353,6 +417,10 @@ runButton.MouseButton1Click:Connect(function()
     else
         outputBox.Text = "No code to execute!"
     end
+end)
+
+clearButton.MouseButton1Click:Connect(function()
+    clearInput()
 end)
 
 -- Add hover effects for buttons
@@ -380,14 +448,22 @@ end
 addHoverEffect(toggleButton, Color3.fromRGB(65, 65, 65), Color3.fromRGB(45, 45, 45))
 addHoverEffect(closeButton, Color3.fromRGB(240, 73, 89), Color3.fromRGB(220, 53, 69))
 addHoverEffect(runButton, Color3.fromRGB(60, 187, 89), Color3.fromRGB(40, 167, 69))
+addHoverEffect(clearButton, Color3.fromRGB(255, 213, 27), Color3.fromRGB(255, 193, 7))
 
 -- Keyboard shortcut (Ctrl+Enter to run code)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and isGUIOpen then
         if input.KeyCode == Enum.KeyCode.Return and UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
             runButton.MouseButton1Click:Fire()
+        elseif input.KeyCode == Enum.KeyCode.Delete and UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+            clearButton.MouseButton1Click:Fire()
         end
     end
 end)
 
 print("Code Executor GUI loaded successfully!")
+print("Features:")
+print("- Execute regular Lua code")
+print("- Execute loadstring scripts from URLs")
+print("- Clear button to instantly clear input")
+print("- Keyboard shortcuts: Ctrl+Enter (Run), Ctrl+Delete (Clear)")
