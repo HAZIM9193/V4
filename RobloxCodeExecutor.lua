@@ -48,6 +48,52 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = mainFrame
 
+-- Create rainbow gradient background
+local rainbowGradient = Instance.new("UIGradient")
+rainbowGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 128)),    -- Pink
+    ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 0, 0)),  -- Red
+    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(255, 128, 0)), -- Orange
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 0)),  -- Yellow
+    ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 255, 0)),  -- Green
+    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(0, 255, 255)), -- Cyan
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(128, 0, 255))     -- Purple
+})
+rainbowGradient.Rotation = 45
+rainbowGradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 0.7),
+    NumberSequenceKeypoint.new(0.5, 0.8),
+    NumberSequenceKeypoint.new(1, 0.7)
+})
+rainbowGradient.Parent = mainFrame
+
+-- Create sparkle effects container
+local sparkleContainer = Instance.new("Frame")
+sparkleContainer.Name = "SparkleContainer"
+sparkleContainer.Size = UDim2.new(1, 0, 1, 0)
+sparkleContainer.Position = UDim2.new(0, 0, 0, 0)
+sparkleContainer.BackgroundTransparency = 1
+sparkleContainer.Parent = mainFrame
+
+-- Create sparkle particles
+local sparkles = {}
+for i = 1, 15 do
+    local sparkle = Instance.new("Frame")
+    sparkle.Name = "Sparkle" .. i
+    sparkle.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
+    sparkle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+    sparkle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    sparkle.BorderSizePixel = 0
+    sparkle.Parent = sparkleContainer
+    
+    -- Make sparkles circular
+    local sparkleCorner = Instance.new("UICorner")
+    sparkleCorner.CornerRadius = UDim.new(1, 0)
+    sparkleCorner.Parent = sparkle
+    
+    table.insert(sparkles, sparkle)
+end
+
 -- Create the close button (X)
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
@@ -212,6 +258,87 @@ local scaleOutTween = TweenService:Create(
 
 -- Variables
 local isGUIOpen = false
+local rainbowAnimationRunning = false
+local sparkleAnimationRunning = false
+
+-- Rainbow animation function
+local function animateRainbow()
+    if rainbowAnimationRunning then return end
+    rainbowAnimationRunning = true
+    
+    spawn(function()
+        while isGUIOpen and rainbowAnimationRunning do
+            -- Rotate the gradient continuously
+            local rotateTween = TweenService:Create(
+                rainbowGradient,
+                TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
+                {Rotation = rainbowGradient.Rotation + 360}
+            )
+            rotateTween:Play()
+            
+            -- Change transparency for shimmer effect
+            local shimmerTween = TweenService:Create(
+                rainbowGradient,
+                TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+                {Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.5),
+                    NumberSequenceKeypoint.new(0.5, 0.9),
+                    NumberSequenceKeypoint.new(1, 0.5)
+                })}
+            )
+            shimmerTween:Play()
+            
+            wait(0.1)
+        end
+    end)
+end
+
+-- Sparkle animation function
+local function animateSparkles()
+    if sparkleAnimationRunning then return end
+    sparkleAnimationRunning = true
+    
+    spawn(function()
+        while isGUIOpen and sparkleAnimationRunning do
+            for _, sparkle in pairs(sparkles) do
+                -- Random sparkle movement
+                local newX = math.random() * 0.9
+                local newY = math.random() * 0.9
+                local moveTween = TweenService:Create(
+                    sparkle,
+                    TweenInfo.new(math.random(2, 5), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    {Position = UDim2.new(newX, 0, newY, 0)}
+                )
+                moveTween:Play()
+                
+                -- Random sparkle opacity animation
+                local opacityTween = TweenService:Create(
+                    sparkle,
+                    TweenInfo.new(math.random(1, 3), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+                    {BackgroundTransparency = math.random(0, 8) / 10}
+                )
+                opacityTween:Play()
+                
+                -- Random sparkle color change
+                local colorTween = TweenService:Create(
+                    sparkle,
+                    TweenInfo.new(math.random(1, 4), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+                    {BackgroundColor3 = Color3.fromHSV(math.random(), 0.8, 1)}
+                )
+                colorTween:Play()
+                
+                wait(math.random() * 0.5)
+            end
+            wait(1)
+        end
+    end)
+end
+
+-- Function to stop animations
+local function stopAnimations()
+    rainbowAnimationRunning = false
+    sparkleAnimationRunning = false
+end
 
 -- Function to show GUI with fade in animation
 local function showGUI()
@@ -234,6 +361,10 @@ local function showGUI()
         -- Start animations
         scaleInTween:Play()
         fadeInTween:Play()
+        
+        -- Start rainbow and sparkle animations
+        animateRainbow()
+        animateSparkles()
         
         -- Animate children
         wait(0.1)
@@ -263,6 +394,9 @@ end
 local function hideGUI()
     if isGUIOpen then
         isGUIOpen = false
+        
+        -- Stop rainbow and sparkle animations
+        stopAnimations()
         
         -- Animate children first
         for _, child in pairs(mainFrame:GetChildren()) do
@@ -466,4 +600,5 @@ print("Features:")
 print("- Execute regular Lua code")
 print("- Execute loadstring scripts from URLs")
 print("- Clear button to instantly clear input")
+print("- Beautiful rainbow sparkling animated background")
 print("- Keyboard shortcuts: Ctrl+Enter (Run), Ctrl+Delete (Clear)")
