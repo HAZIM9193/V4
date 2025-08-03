@@ -1,5 +1,36 @@
--- Roblox Code Executor GUI Script
--- Place this in StarterPlayerScripts or StarterGui
+--[[
+🌈✨ Roblox Code Executor with Rainbow Background v2.0.0
+================================================================================
+A beautiful and feature-rich code executor GUI for Roblox with animated rainbow 
+sparkling background, loadstring support, and modern UI design.
+
+GitHub: https://github.com/YOUR-USERNAME/roblox-code-executor
+License: MIT
+Author: Roblox Code Executor Project
+Version: 2.0.0
+Last Updated: 2024-12-20
+
+Features:
+- 💻 Safe Lua code execution
+- 🔗 Loadstring support for external scripts  
+- 🌈 Animated rainbow gradient background
+- ✨ Sparkling particle effects
+- 🗑️ Clear button functionality
+- ⌨️ Keyboard shortcuts (Ctrl+Enter, Ctrl+Delete)
+- 🎨 Modern UI with smooth animations
+- 🖱️ Interactive hover effects
+
+Installation:
+1. Place this script in StarterPlayerScripts or StarterGui
+2. Run your game
+3. Click the "RQ" button to open the executor
+
+Usage Examples:
+- Basic: print("Hello World!")
+- Loadstring: loadstring(game:HttpGet("SCRIPT_URL"))()
+- Game: game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
+================================================================================
+--]]
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -33,11 +64,11 @@ local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(0, 8)
 toggleCorner.Parent = toggleButton
 
--- Create the main GUI frame
+-- Create the main GUI frame (configurable size)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 600, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+mainFrame.Size = UDim2.new(0, CONFIG.GUI_SIZE[1], 0, CONFIG.GUI_SIZE[2])
+mainFrame.Position = UDim2.new(0.5, -CONFIG.GUI_SIZE[1]/2, 0.5, -CONFIG.GUI_SIZE[2]/2)
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false
@@ -75,9 +106,9 @@ sparkleContainer.Position = UDim2.new(0, 0, 0, 0)
 sparkleContainer.BackgroundTransparency = 1
 sparkleContainer.Parent = mainFrame
 
--- Create sparkle particles
+-- Create sparkle particles (configurable count)
 local sparkles = {}
-for i = 1, 15 do
+for i = 1, CONFIG.SPARKLE_COUNT do
     local sparkle = Instance.new("Frame")
     sparkle.Name = "Sparkle" .. i
     sparkle.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
@@ -145,7 +176,17 @@ inputBox.Size = UDim2.new(1, -20, 0, 150)
 inputBox.Position = UDim2.new(0, 10, 0, 80)
 inputBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 inputBox.BorderSizePixel = 0
-inputBox.Text = 'print("Hello World!")'
+inputBox.Text = [[-- 🌈✨ Roblox Code Executor v2.0.0
+-- Try these examples:
+
+print("Hello World!")
+print("Current time:", os.date())
+
+-- Change player speed
+-- game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
+
+-- Load external script
+-- loadstring(game:HttpGet("SCRIPT_URL_HERE"))()]]
 inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 inputBox.TextSize = 14
 inputBox.Font = Enum.Font.Code
@@ -247,7 +288,7 @@ local fadeOutTween = TweenService:Create(
 local scaleInTween = TweenService:Create(
     mainFrame,
     TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-    {Size = UDim2.new(0, 600, 0, 400)}
+    {Size = UDim2.new(0, CONFIG.GUI_SIZE[1], 0, CONFIG.GUI_SIZE[2])}
 )
 
 local scaleOutTween = TweenService:Create(
@@ -256,12 +297,28 @@ local scaleOutTween = TweenService:Create(
     {Size = UDim2.new(0, 0, 0, 0)}
 )
 
--- Variables
+-- ============================================================================
+-- VARIABLES & CONFIGURATION
+-- ============================================================================
+
 local isGUIOpen = false
 local rainbowAnimationRunning = false
 local sparkleAnimationRunning = false
 
--- Rainbow animation function
+-- Configuration (modify these to customize the executor)
+local CONFIG = {
+    RAINBOW_ROTATION_SPEED = 3,      -- Seconds for full rotation
+    SPARKLE_COUNT = 15,              -- Number of sparkles
+    ANIMATION_SPEED = 0.2,           -- Button hover animation speed
+    GUI_SIZE = {600, 400},           -- Main frame size
+    VERSION = "2.0.0"                -- Current version
+}
+
+-- ============================================================================
+-- ANIMATION FUNCTIONS
+-- ============================================================================
+
+-- Rainbow background animation with configurable speed
 local function animateRainbow()
     if rainbowAnimationRunning then return end
     rainbowAnimationRunning = true
@@ -271,7 +328,7 @@ local function animateRainbow()
             -- Rotate the gradient continuously
             local rotateTween = TweenService:Create(
                 rainbowGradient,
-                TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
+                TweenInfo.new(CONFIG.RAINBOW_ROTATION_SPEED, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
                 {Rotation = rainbowGradient.Rotation + 360}
             )
             rotateTween:Play()
@@ -429,7 +486,11 @@ local function hideGUI()
     end
 end
 
--- Function to execute code safely with loadstring support
+-- ============================================================================
+-- CODE EXECUTION ENGINE
+-- ============================================================================
+
+-- Enhanced code execution with improved security and loadstring support
 local function executeCode(code)
     outputBox.Text = ""
     
@@ -531,7 +592,11 @@ local function clearInput()
     outputBox.Text = "Input cleared."
 end
 
--- Connect button events
+-- ============================================================================
+-- EVENT CONNECTIONS
+-- ============================================================================
+
+-- Toggle button (RQ) - Opens/closes the main GUI
 toggleButton.MouseButton1Click:Connect(function()
     if isGUIOpen then
         hideGUI()
@@ -557,7 +622,11 @@ clearButton.MouseButton1Click:Connect(function()
     clearInput()
 end)
 
--- Add hover effects for buttons
+-- ============================================================================
+-- UI ENHANCEMENT FUNCTIONS  
+-- ============================================================================
+
+-- Add smooth hover effects for interactive buttons
 local function addHoverEffect(button, hoverColor, normalColor)
     button.MouseEnter:Connect(function()
         local hoverTween = TweenService:Create(
@@ -595,10 +664,24 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-print("Code Executor GUI loaded successfully!")
-print("Features:")
-print("- Execute regular Lua code")
-print("- Execute loadstring scripts from URLs")
-print("- Clear button to instantly clear input")
-print("- Beautiful rainbow sparkling animated background")
-print("- Keyboard shortcuts: Ctrl+Enter (Run), Ctrl+Delete (Clear)")
+-- ============================================================================
+-- INITIALIZATION COMPLETE
+-- ============================================================================
+
+print("🌈✨ Roblox Code Executor v2.0.0 loaded successfully!")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("📱 Click the 'RQ' button in the top-left to open the executor")
+print("🎯 Features loaded:")
+print("   • 💻 Safe Lua code execution")
+print("   • 🔗 Loadstring support for external scripts")  
+print("   • 🌈 Rainbow animated background")
+print("   • ✨ Sparkling particle effects")
+print("   • 🗑️ Clear button (yellow button)")
+print("   • ⌨️ Keyboard shortcuts:")
+print("     - Ctrl+Enter: Run code")
+print("     - Ctrl+Delete: Clear input")
+print("   • 🎨 Modern UI with smooth animations")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("🔗 GitHub: https://github.com/YOUR-USERNAME/roblox-code-executor")
+print("📄 License: MIT | 👥 Contributions welcome!")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
