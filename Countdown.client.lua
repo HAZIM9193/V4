@@ -4,21 +4,19 @@ local RunService    = game:GetService("RunService")
 -- set the initial future moment here
 local targetTime = DateTime.fromLocalTime(2025, 8, 8, 21, 30, 0)
 
-local function setTarget(year, month, day, hour, minute, second)
-    targetTime = DateTime.fromLocalTime(year, month, day, hour, minute, second or 0)
-end
-
 local function pad(n)
     return n < 10 and ("0" .. n) or tostring(n)
 end
 
-RunService.RenderStepped:Connect(function()
+local conn
+conn = RunService.RenderStepped:Connect(function()
     local now            = DateTime.now()
     local secondsBetween = targetTime.UnixTimestamp - now.UnixTimestamp
 
     if secondsBetween <= 0 then
         countdownText.Text = "Update Started!"
-        return -- waits here until setTarget(...) assigns a new future time
+        conn:Disconnect()
+        return
     end
 
     local days  = math.floor(secondsBetween / 86400)
