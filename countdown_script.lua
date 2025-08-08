@@ -1,5 +1,8 @@
--- Fixed Roblox Lua Countdown Script with Accurate Timezone Handling
-local TargetDate = os.time({year=2025, month=8, day=8, hour=22, min=0, sec=0}) -- Target date/time in LOCAL timezone
+-- Fixed Roblox Lua Countdown Script with Malaysian Timezone (UTC+8)
+-- Create target date in UTC, then add Malaysian timezone offset
+local TargetDateUTC = os.time({year=2025, month=8, day=8, hour=14, min=0, sec=0}) -- 22:00 Malaysian = 14:00 UTC
+local MalaysianOffset = 8 * 60 * 60 -- +8 hours in seconds
+local TargetDate = TargetDateUTC + MalaysianOffset -- Target time in Malaysian timezone
 
 local counting = true -- Control when to stop
 local eventStarted = false -- Flag to track if event has started
@@ -10,11 +13,10 @@ local Players = game:GetService("Players")
 local playerAddedConnection
 
 while counting do
-    -- Get current time in the same timezone as TargetDate
-    -- Since TargetDate is created with os.time() using local timezone,
-    -- we should compare it with current local time, not UTC+8
-    local currentTime = os.time()
-    local secondLeft = TargetDate - currentTime
+    -- Get current UTC time and convert to Malaysian time (UTC+8)
+    local currentUTC = os.time()
+    local currentMalaysianTime = currentUTC + MalaysianOffset
+    local secondLeft = TargetDate - currentMalaysianTime
 
     if secondLeft <= 0 and not eventStarted then
         -- Show 00 seconds first
