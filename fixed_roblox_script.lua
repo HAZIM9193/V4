@@ -34,13 +34,17 @@ while counting do
 
         -- Kick semua player yang ada sekarang
         for _, player in pairs(Players:GetPlayers()) do
-            player:Kick("Game Is Processing To being Update..")
+            pcall(function()
+                player:Kick("Game Is Processing To being Update..")
+            end)
         end
 
         -- Auto kick bila ada player baru join selagi text masih Event Started🔥
         playerAddedConnection = Players.PlayerAdded:Connect(function(player)
             if game.Workspace.CountPart.SurfaceGui.CountText.Text == "Event Started🔥" then
-                player:Kick("Game Is Processing To being Update..")
+                pcall(function()
+                    player:Kick("Game Is Processing To being Update..")
+                end)
             end
         end)
 
@@ -48,7 +52,9 @@ while counting do
         task.spawn(function()
             while game.Workspace.CountPart.SurfaceGui.CountText.Text == "Event Started🔥" do
                 for _, player in pairs(Players:GetPlayers()) do
-                    player:Kick("Game Is Processing To being Update..")
+                    pcall(function()
+                        player:Kick("Game Is Processing To being Update..")
+                    end)
                 end
                 task.wait(1)
             end
