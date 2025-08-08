@@ -4,8 +4,8 @@ local RunService    = game:GetService("RunService")
 -- set the initial future moment here
 local targetTime = DateTime.fromLocalTime(2025, 8, 8, 21, 30, 0)
 
-local function setTarget(y, m, d, h, min, s)
-    targetTime = DateTime.fromLocalTime(y, m, d, h, min, s or 0)
+local function setTarget(year, month, day, hour, minute, second)
+    targetTime = DateTime.fromLocalTime(year, month, day, hour, minute, second or 0)
 end
 
 local function pad(n)
