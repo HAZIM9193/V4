@@ -1,7 +1,8 @@
 -- DJ Control Script - Single Server Script for Roblox
 -- Place this script in ServerScriptService
+-- NOTE: MessagingService only works in Live Server, not Studio unless using Team Test
 
-local Players = Players
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MessagingService = game:GetService("MessagingService")
 local TweenService = game:GetService("TweenService")
@@ -58,6 +59,13 @@ local function fadeDJModel(fadeIn)
     
     for _, descendant in pairs(djModel:GetDescendants()) do
         if descendant:IsA("BasePart") then
+            -- Set initial state to ensure tween works properly
+            if fadeIn then
+                descendant.Transparency = 1 -- Start invisible for fade in
+            else
+                descendant.Transparency = 0 -- Start visible for fade out
+            end
+            
             local tween = TweenService:Create(
                 descendant,
                 TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
@@ -66,6 +74,13 @@ local function fadeDJModel(fadeIn)
             tween:Play()
             descendant.CanCollide = targetCanCollide
         elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+            -- Set initial state for decals/textures too
+            if fadeIn then
+                descendant.Transparency = 1 -- Start invisible for fade in
+            else
+                descendant.Transparency = 0 -- Start visible for fade out
+            end
+            
             local tween = TweenService:Create(
                 descendant,
                 TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
@@ -208,9 +223,9 @@ local function createClientScript(player)
     local localScript = Instance.new("LocalScript")
     localScript.Name = "DJControlGUI"
     
-    -- LocalScript source code
-    localScript.Source = [[
-local Players = Players
+         -- LocalScript source code
+     localScript.Source = [[
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
