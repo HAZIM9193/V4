@@ -465,6 +465,54 @@ function UILibrary:CreateDropdown(tab, dropdownName, options, callback)
                 DropdownButton.Text = dropdownName .. ": " .. option
                 callback(option)
             end
+        end,
+        UpdateOptions = function(newOptions)
+            -- Clear existing options
+            for _, child in pairs(DropdownList:GetChildren()) do
+                if child:IsA("TextButton") then
+                    child:Destroy()
+                end
+            end
+            
+            -- Update options table
+            options = newOptions
+            selectedOption = newOptions[1] or ""
+            DropdownButton.Text = dropdownName .. ": " .. selectedOption
+            
+            -- Recreate option buttons
+            DropdownList.Size = UDim2.new(1, 0, 0, #newOptions * 30)
+            
+            for i, option in ipairs(newOptions) do
+                local OptionButton = Instance.new("TextButton")
+                OptionButton.Name = "Option_" .. tostring(i)
+                OptionButton.Parent = DropdownList
+                OptionButton.Size = UDim2.new(1, 0, 0, 30)
+                OptionButton.BackgroundColor3 = Config.Theme.Secondary
+                OptionButton.BackgroundTransparency = 0.5
+                OptionButton.BorderSizePixel = 0
+                OptionButton.Text = option
+                OptionButton.TextColor3 = Config.Theme.Text
+                OptionButton.TextScaled = true
+                OptionButton.Font = Enum.Font.Gotham
+                
+                OptionButton.MouseEnter:Connect(function()
+                    CreateTween(OptionButton, {BackgroundTransparency = 0}):Play()
+                end)
+                
+                OptionButton.MouseLeave:Connect(function()
+                    CreateTween(OptionButton, {BackgroundTransparency = 0.5}):Play()
+                end)
+                
+                OptionButton.MouseButton1Click:Connect(function()
+                    selectedOption = option
+                    DropdownButton.Text = dropdownName .. ": " .. option
+                    DropdownList.Visible = false
+                    isOpen = false
+                    CreateTween(DropdownIcon, {Rotation = 0}):Play()
+                    CreateTween(DropdownFrame, {Size = UDim2.new(1, 0, 0, 40)}):Play()
+                    callback(option)
+                end)
+            end
         end
     }
 end
