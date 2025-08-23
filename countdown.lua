@@ -1,4 +1,4 @@
---// Floating Countdown -> Fixed Target Date (MYT, UTC+8)
+--// Floating Countdown -> Fixed Target Date (EST, UTC-5)
 --// Works in most executors (uses CoreGui / gethui if available)
 
 --== helper: safe parent in CoreGui / gethui
@@ -39,7 +39,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -10, 0, 20)
 title.Position = UDim2.fromOffset(8, 6)
 title.BackgroundTransparency = 1
-title.Text = "Countdown (MYT Target Date)"
+title.Text = "Countdown (EST Target Date)"
 title.TextColor3 = Color3.fromRGB(180, 200, 255)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.GothamBold
@@ -97,7 +97,7 @@ task.spawn(function()
     local TargetDate = os.time({year=2025, month=8, day=10, hour=8, min=0, sec=0}) -- Target tarikh
     
     while sg.Parent do
-        local Time = os.date("!*t", os.time() + 8 * 60 * 60) -- UTC+8
+        local Time = os.date("!*t", os.time() - 5 * 60 * 60) -- UTC-5 (EST)
         local currentDate = os.time(Time)
         local secondLeft = TargetDate - currentDate
         
