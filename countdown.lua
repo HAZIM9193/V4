@@ -94,12 +94,12 @@ local function pad2(n) return string.format("%02d", math.floor(n)) end
 
 --== updater loop
 task.spawn(function()
-    local TargetDate = os.time({year=2025, month=8, day=10, hour=22, min=0, sec=0}) -- Target time: 22:00 (10:00 PM)
+    -- Target date in EST (22:00 EST = 03:00 UTC next day)
+    local TargetDate = os.time({year=2025, month=8, day=11, hour=3, min=0, sec=0}) -- 22:00 EST = 03:00 UTC next day
     
     while sg.Parent do
-        local Time = os.date("!*t", os.time() - 5 * 60 * 60) -- UTC-5 (EST)
-        local currentDate = os.time(Time)
-        local secondLeft = TargetDate - currentDate
+        local currentUTC = os.time() -- Current UTC time
+        local secondLeft = TargetDate - currentUTC
         
         if secondLeft <= 0 then
             timeLabel.Text = "00:00:00:00"
