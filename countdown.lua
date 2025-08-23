@@ -39,7 +39,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -10, 0, 20)
 title.Position = UDim2.fromOffset(8, 6)
 title.BackgroundTransparency = 1
-title.Text = "Countdown (EST Target Date)"
+title.Text = "Grow a Garden Update Time"
 title.TextColor3 = Color3.fromRGB(180, 200, 255)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.GothamBold
@@ -94,12 +94,12 @@ local function pad2(n) return string.format("%02d", math.floor(n)) end
 
 --== updater loop
 task.spawn(function()
-    local TargetDate = os.time({year=2025, month=8, day=10, hour=8, min=0, sec=0}) -- Target tarikh
+    -- Target date in EST (22:00 EST = 03:00 UTC next day)
+    local TargetDate = os.time({year=2025, month=8, day=11, hour=3, min=0, sec=0}) -- 22:00 EST = 03:00 UTC next day
     
     while sg.Parent do
-        local Time = os.date("!*t", os.time() - 5 * 60 * 60) -- UTC-5 (EST)
-        local currentDate = os.time(Time)
-        local secondLeft = TargetDate - currentDate
+        local currentUTC = os.time() -- Current UTC time
+        local secondLeft = TargetDate - currentUTC
         
         if secondLeft <= 0 then
             timeLabel.Text = "00:00:00:00"
